@@ -1,0 +1,103 @@
+--[[ 
+    Aimlock Blox Fruits
+    Author: Nhân
+]]
+
+--// Services
+local Players = game:GetService("Players")
+local RunService = game:GetService("RunService")
+local UserInputService = game:GetService("UserInputService")
+local Camera = workspace.CurrentCamera
+local LP = Players.LocalPlayer
+
+--// UI (Rayfield)
+local Rayfield = loadstring(game:HttpGet("https://sirius.menu/rayfield"))()
+local Window = Rayfield:CreateWindow({
+	Name = "Blox Fruits | Aimlock - Nhân",
+	LoadingTitle = "Aimlock Script",
+	LoadingSubtitle = "by Nhân",
+	ConfigurationSaving = { Enabled = false }
+})
+
+local Tab = Window:CreateTab("🎯 Aimlock | Nhân", 4483362458)
+
+--// SETTINGS
+local Aimlock = false
+local FOV = 150
+local Smoothness = 0.15
+local AimPart = "HumanoidRootPart"
+
+--// FUNCTIONS
+local function Alive(char)
+	return char and char:FindFirstChild("Humanoid") and char.Humanoid.Health > 0
+end
+
+local function GetTarget()
+	local closest, dist = nil, math.huge
+	for _,p in pairs(Players:GetPlayers()) do
+		if p ~= LP and p.Character and Alive(p.Character) then
+			local part = p.Character:FindFirstChild(AimPart)
+			if part then
+				local pos, onscreen = Camera:WorldToViewportPoint(part.Position)
+				if onscreen then
+					local mouse = UserInputService:GetMouseLocation()
+					local mag = (Vector2.new(pos.X, pos.Y) - mouse).Magnitude
+					if mag < FOV and mag < dist then
+						dist = mag
+						closest = part
+					end
+				end
+			end
+		end
+	end
+	return closest
+end
+
+--// UI
+Tab:CreateToggle({
+	Name = "Enable Aimlock (by Nhân)",
+	CurrentValue = false,
+	Callback = function(v)
+		Aimlock = v
+	end
+})
+
+Tab:CreateSlider({
+	Name = "FOV",
+	Range = {50, 400},
+	Increment = 10,
+	CurrentValue = 150,
+	Callback = function(v)
+		FOV = v
+	end
+})
+
+Tab:CreateSlider({
+	Name = "Smoothness",
+	Range = {0.05, 1},
+	Increment = 0.05,
+	CurrentValue = 0.15,
+	Callback = function(v)
+		Smoothness = v
+	end
+})
+
+Tab:CreateParagraph({
+	Title = "Credit",
+	Content = "Script Aimlock được chỉnh sửa bởi Nhân"
+})
+
+--// MAIN
+RunService.RenderStepped:Connect(function()
+	if Aimlock then
+		pcall(function()
+			local target = GetTarget()
+			if target then
+				local cf = CFrame.new(Camera.CFrame.Position, target.Position)
+				Camera.CFrame = Camera.CFrame:Lerp(cf, Smoothness)
+			end
+		end)
+	end
+end)
+loadstring(game:HttpGet("https://raw.githubusercontent.com/USERNAME/REPO/main/BloxFruits_Aimlock.lua"))()
+ })
